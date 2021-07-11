@@ -71,45 +71,36 @@ arrows = {
    free = {},		-- stack de espacios libres en la lista de flechas
 }
 
-enemiesFactory = {
+enemies = {
    list = {},
    free = {},
 }
 
-function createArrows(x,y)
-   if #arrows.free > 0 then
+function create(factory,x,y)
+   if #factory.free > 0 then
 	  -- sí hay un espacio libre en la pila tomar ese espacio y
 	  -- reutilizar ese indice
-	  local foo = table.remove(arrows.free)
-	  arrows.list[foo] = {x=x, y=y, alive = true};
+	  local foo = table.remove(factory.free)
+	  factory.list[foo] = {x=x, y=y, alive = true};
    else
 	  -- sí no crear un nuevo registro en arrows 
-	  table.insert(arrows.list,{x=x,y=y,alive = true})
+	  table.insert(factory.list,{x=x,y=y,alive = true})
    end
 end
 
-function killArrows(id)
+function kill(factory,id)
    -- cambiar su estado de vivo a muerto
-   arrows.list[id].alive = false;
+   factory.list[id].alive = false;
    --  añadir su indice a la pila de espacios libres
-   table.insert(arrows.free, id)
+   table.insert(factory.free, id)
 end
 
-function iterateArrows()
-   for i = 0, #arrows.list do
-	  local foo = arrows.list[i] or nil
+function iterate(factory, actions)
+   for i = 0, #factory.list do
+	  local foo = factory.list[i] or nil
 	  
 	  if foo ~= nil then
-		 -- verificar que la flecha exista y se encuentra en el viewport
-		 if foo.alive and foo.x < SCREEN_WIDTH then
-			-- sí se existe y esta en el viewport entonces se mueve a la
-			-- derecha y se dibuja su sprite
-			foo.x = foo.x + arrows.hspd
-			spr(arrow_sprite, foo.x, foo.y,0)
-		 -- sí existe pero no esta en el el viewport
-		 elseif foo.alive then
-			killArrows(i)
-		 end
+		 actions(foo, i)
 	  end
    end
 end
@@ -134,7 +125,7 @@ rooms = {
 
 		 -- disparar flechas a intervalos de 200 milisegundos
 		 if actions.fire() and player.cooldown < d then
-			createArrows(player.x,player.y);
+			create(arrows, player.x, player.y);
 			player.cooldown = d + self.cooldownDutarion;
 		 end
 
@@ -159,7 +150,18 @@ rooms = {
 	  Draw = function(self)
 		 cls()
 		 spr(moon_sprite,200,10,5,2,0,0,2,2)
-		 iterateArrows()
+		 iterate(arrows, function(foo, id)
+					-- verificar que la flecha exista y se encuentra en el viewport
+					if foo.alive and foo.x < SCREEN_WIDTH then
+					   -- sí se existe y esta en el viewport entonces se mueve a la
+					   -- derecha y se dibuja su sprite
+					   foo.x = foo.x + arrows.hspd
+					   spr(arrow_sprite, foo.x, foo.y,0)
+					   -- sí existe pero no esta en el el viewport
+					elseif foo.alive then
+					   kill(arrows, id)
+					end
+		 end)
 		 
 		 spr(player_sprite,player.x,player.y,0);
 
