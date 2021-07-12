@@ -18,6 +18,24 @@ title_sprite  = 261
 cursor_sprite = 488
 arrow_sprite  = 257
 
+enemy_sprites = 272				--  Hay multiples eneigos [272, 285]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 -- FUNCIONES REESCRITAS 
 
@@ -33,6 +51,11 @@ function nbtnp(value)
    if btnp(value) then return 1 else return 0 end
 end   
 
+function setOvr(foo)
+   OVR = foo
+end
+
+
 function switchRoom(room)
    TIC = function()
 	  room:onCreate()
@@ -42,6 +65,25 @@ function switchRoom(room)
 	  end
    end
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 -- ACTIONS
@@ -53,6 +95,32 @@ actions = {
    fire     = function() return btn(4); end, 
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 -- VARIABLES
 
@@ -60,8 +128,6 @@ player = {
    x = 0, y = 0,				-- coordenadas
    hspd = 0, vspd = 0,			-- velocidad horizontal y vertical
    w = 8, h = 8,				-- width y height
-   
-   cooldown = 0,
 }
 
 arrows = {
@@ -72,6 +138,16 @@ arrows = {
 }
 
 enemies = {
+   ptyp = {
+	  {
+		 s = 100,				-- sprite
+		 m = function(x,y)		-- funcion de x y y, retorna 2 valores
+			return x-1,y;
+		 end
+	  },
+   },
+   
+   size = 8,
    list = {},
    free = {},
 }
@@ -81,10 +157,10 @@ function create(factory,x,y)
 	  -- sí hay un espacio libre en la pila tomar ese espacio y
 	  -- reutilizar ese indice
 	  local foo = table.remove(factory.free)
-	  factory.list[foo] = {x=x, y=y, alive = true};
+	  factory.list[foo] = {x=x, y=y, alive=true};
    else
 	  -- sí no crear un nuevo registro en arrows 
-	  table.insert(factory.list,{x=x,y=y,alive = true})
+	  table.insert(factory.list, {x=x, y=y, alive=true})
    end
 end
 
@@ -105,7 +181,30 @@ function iterate(factory, actions)
    end
 end
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 rooms = {
+
+
+
+
+
+
+
+
+   
 
    
    -- GAME LOOP 
@@ -113,6 +212,20 @@ rooms = {
 	  onCreate = function(self)
 		 -- duracion del cooldown
 		 self.cooldownDutarion = 200;
+		 -- evitar que se auto dispare al inicio 
+		 self.cooldown = time() + self.cooldownDutarion;
+
+		 -- tiempe de generacion entre enemigos
+		 self.enemyTimerDuration = 200
+		 self.enemyTimer = time() + 3000
+		 
+
+		 OVR = function()
+			rect(0,0,SCREEN_WIDTH,SPRITE_SIZE-1,8)
+			print( "SCORE: 000000 ", 8, 1, 15 , true )
+		 end
+
+		 trace("Scene = ingame")
 	  end,
 	  
 	  onStep = function(self)
@@ -124,13 +237,15 @@ rooms = {
 		 local d = time();
 
 		 -- disparar flechas a intervalos de 200 milisegundos
-		 if actions.fire() and player.cooldown < d then
+		 if actions.fire() and self.cooldown < d then
 			create(arrows, player.x, player.y);
-			player.cooldown = d + self.cooldownDutarion;
+			self.cooldown = d + self.cooldownDutarion;
 		 end
 
 		 -- mantener al jugador en el viewport siempre
+		 local left_border = 0
 		 local right_border = SCREEN_WIDTH - player.w
+		 local upper_border = 8
 		 local button_border = SCREEN_HEIGHT - player.h
 			
 		 if player.x <= 0 then
@@ -139,22 +254,27 @@ rooms = {
 			player.x = right_border
 		 end
 
-		 if player.y <= 0 then
-			player.y = 0
+		 if player.y <= upper_border then
+			player.y = upper_border
 		 elseif player.y >= button_border then
 			player.y = button_border
 		 end
+
+		 -- crear enemigos
+		 
 		 
 	  end,
 	  
 	  Draw = function(self)
 		 cls()
 		 spr(moon_sprite,200,10,5,2,0,0,2,2)
+		 
 		 iterate(arrows, function(foo, id)
-					-- verificar que la flecha exista y se encuentra en el viewport
+					-- verificar que la flecha exista y se encuentra en
+					-- el viewport
 					if foo.alive and foo.x < SCREEN_WIDTH then
-					   -- sí se existe y esta en el viewport entonces se mueve a la
-					   -- derecha y se dibuja su sprite
+					   -- sí se existe y esta en el viewport entonces se
+					   -- mueve a la derecha y se dibuja su sprite
 					   foo.x = foo.x + arrows.hspd
 					   spr(arrow_sprite, foo.x, foo.y,0)
 					   -- sí existe pero no esta en el el viewport
@@ -165,10 +285,34 @@ rooms = {
 		 
 		 spr(player_sprite,player.x,player.y,0);
 
-		 print( string.format("%f\n%f",#arrows.list, #arrows.free) )
+		 -- UI
+		 
+		 
+
+		 -- print( string.format([[
+-- arrows:%.0f,%.0f
+-- ]],#arrows.list, #arrows.free), 0, 0, 15, true)
+		 
 	  end
    },
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
    
    -- MAIN MENU
    menu = {
@@ -200,7 +344,30 @@ rooms = {
 		 print("Press any key",240/2-(8*4),68+24)		  
 	  end,
    },
+
+
+
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 -- TIC
