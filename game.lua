@@ -1,5 +1,4 @@
 
-
 -- CONSTANTES GLOBALES
 
 SCREEN_WIDTH       = 240
@@ -10,6 +9,7 @@ HALF_SCREEN_HEIGHT = 68
 
 SPRITE_SIZE        = 8
 
+
 -- SPRITES
 
 player_sprite = 256
@@ -18,25 +18,9 @@ title_sprite  = 261
 cursor_sprite = 488
 arrow_sprite  = 257
 
-enemy_sprites = 272				--  Hay multiples eneigos [272, 285]
+enemy_sprite = 64				--  Hay multiples eneigos [272, 285]
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 -- FUNCIONES REESCRITAS 
 
 function f(...)
@@ -49,10 +33,18 @@ end
 
 function nbtnp(value)
    if btnp(value) then return 1 else return 0 end
-end   
+end
 
-function setOvr(foo)
-   OVR = foo
+function toBits(num)
+   -- https://stackoverflow.com/questions/9079853/lua-print-integer-as-a-binary/9080080
+   -- returns a table of bits, least significant first.
+   local t={} -- will contain the bits
+   while num > 0 do
+	  rest = math.fmod(num, 2)
+	  t[#t+1] = math.floor(rest)
+	  num=(num - rest) / 2
+   end
+   return t
 end
 
 
@@ -66,26 +58,6 @@ function switchRoom(room)
    end
 end
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 -- ACTIONS
 
 actions = {
@@ -95,33 +67,6 @@ actions = {
    fire     = function() return btn(4); end, 
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 -- VARIABLES
 
 player = {
@@ -138,18 +83,18 @@ arrows = {
 }
 
 enemies = {
-   ptyp = {
-	  {
-		 s = 100,				-- sprite
-		 m = function(x,y)		-- funcion de x y y, retorna 2 valores
-			return x-1,y;
-		 end
-	  },
-   },
-   
    size = 8,
    list = {},
    free = {},
+}
+
+ptyp = {
+   {
+	  s = 100,				-- sprite
+	  m = function(x,y)		-- funcion de x y y, retorna 2 valores
+		 return x-1,y;
+	  end
+   },
 }
 
 function create(factory,x,y)
@@ -181,6 +126,60 @@ function iterate(factory, actions)
    end
 end
 
+function registro(factory, foo)
+   local t = foo[1]
+   local num = foo[2]
+   local i = 1
+   -- returns a table of bits, least significant first.
+   while num > 0 do
+	  local rest = math.fmod(num, 2)
+
+	  if rest == 1 then
+		 create(factory,SCREEN_WIDTH + 8, i * 8)
+	  end
+	  
+	  num=(num - rest) / 2
+	  i = i + 1 
+   end
+end
+
+
+
+
+level = {
+ { 64, 0xffff },
+ { 64, 0x0000 },
+ { 65, 0x2000 },
+ { 65, 0x1000 },
+ { 65, 0x0800 },
+ { 65, 0x0400 },
+ { 65, 0x0200 },
+ { 65, 0x0100 },
+ { 65, 0x0080 },
+ { 65, 0x0040 },
+ { 65, 0x0020 },
+ { 65, 0x0010 },
+ { 65, 0x0008 },
+ { 65, 0x0004 },
+ { 65, 0x0002 },
+ { 65, 0x0001 },
+ { 65, 0x0000 },
+ { 65, 0x8001 },
+ { 65, 0x4002 },
+ { 65, 0x2004 },
+ { 65, 0x1008 },
+ { 65, 0x0810 },
+ { 65, 0x0420 },
+ { 65, 0x0240 },
+ { 65, 0x0180 },
+ { 65, 0x0180 },
+ { 65, 0x0240 },
+ { 65, 0x0420 },
+ { 65, 0x0810 },
+ { 65, 0x1008 },
+ { 65, 0x2004 },
+ { 65, 0x4002 },
+}
 
 
 
@@ -188,25 +187,10 @@ end
 
 
 
-
-
-
-
-
-
+-- ROOMS
 
 rooms = {
 
-
-
-
-
-
-
-
-   
-
-   
    -- GAME LOOP 
    inGame = {
 	  onCreate = function(self)
@@ -225,7 +209,6 @@ rooms = {
 			print( "SCORE: 000000 ", 8, 1, 15 , true )
 		 end
 
-		 trace("Scene = ingame")
 	  end,
 	  
 	  onStep = function(self)
@@ -240,6 +223,13 @@ rooms = {
 		 if actions.fire() and self.cooldown < d then
 			create(arrows, player.x, player.y);
 			self.cooldown = d + self.cooldownDutarion;
+		 end
+
+		 -- crear enemigos
+		 if self.enemyTimer < d and #level > 0 then
+			local bar = table.remove(level,1)
+			registro(enemies, bar )
+			self.enemyTimer = d + self.enemyTimerDuration
 		 end
 
 		 -- mantener al jugador en el viewport siempre
@@ -260,7 +250,6 @@ rooms = {
 			player.y = button_border
 		 end
 
-		 -- crear enemigos
 		 
 		 
 	  end,
@@ -269,7 +258,7 @@ rooms = {
 		 cls()
 		 spr(moon_sprite,200,10,5,2,0,0,2,2)
 		 
-		 iterate(arrows, function(foo, id)
+		 iterate(arrows,function(foo, id)
 					-- verificar que la flecha exista y se encuentra en
 					-- el viewport
 					if foo.alive and foo.x < SCREEN_WIDTH then
@@ -282,38 +271,17 @@ rooms = {
 					   kill(arrows, id)
 					end
 		 end)
+
+		 iterate(enemies, function(foo, id)
+					foo.x, foo.y = foo.m(foo.x,foo.y)
+					spr(enemy_sprite, foo.x, foo.y)
+		 end)
 		 
 		 spr(player_sprite,player.x,player.y,0);
-
-		 -- UI
-		 
-		 
-
-		 -- print( string.format([[
--- arrows:%.0f,%.0f
--- ]],#arrows.list, #arrows.free), 0, 0, 15, true)
 		 
 	  end
    },
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   
-   
    -- MAIN MENU
    menu = {
 	  onCreate = function(self)
@@ -350,29 +318,9 @@ rooms = {
 
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 -- TIC
 function TIC()
    switchRoom(rooms.menu);
 end
 
--- spr(id,x,y,colorkey=-1,scale=1,flip=0,rotate=0,w=1,h=1)
+
