@@ -1,3 +1,4 @@
+require("levels.1")
 
 -- CONSTANTES GLOBALES
 
@@ -88,24 +89,15 @@ enemies = {
    free = {},
 }
 
-ptyp = {
-   {
-	  s = 100,				-- sprite
-	  m = function(x,y)		-- funcion de x y y, retorna 2 valores
-		 return x-1,y;
-	  end
-   },
-}
-
-function create(factory,x,y)
+function create(factory,x,y,t)
    if #factory.free > 0 then
 	  -- sí hay un espacio libre en la pila tomar ese espacio y
 	  -- reutilizar ese indice
 	  local foo = table.remove(factory.free)
-	  factory.list[foo] = {x=x, y=y, alive=true};
+	  factory.list[foo] = {x=x, y=y, t=t,  alive=true};
    else
 	  -- sí no crear un nuevo registro en arrows 
-	  table.insert(factory.list, {x=x, y=y, alive=true})
+	  table.insert(factory.list, {x=x, y=y, t=t, alive=true})
    end
 end
 
@@ -126,65 +118,32 @@ function iterate(factory, actions)
    end
 end
 
-function registro(factory, foo)
-   local t = foo[1]
-   local num = foo[2]
+function registro(factory, t, num)
    local i = 1
    -- returns a table of bits, least significant first.
-   while num > 0 do
-	  local rest = math.fmod(num, 2)
 
-	  if rest == 1 then
-		 create(factory,SCREEN_WIDTH + 8, i * 8)
-	  end
-	  
-	  num=(num - rest) / 2
-	  i = i + 1 
+   while num > 0 do
+      local rest = math.fmod(num, 2)
+
+      if rest == 1 then
+         create(factory,SCREEN_WIDTH + 8, i * 8, t)
+      end
+      
+      num=(num - rest) / 2
+      i = i + 1 
    end
+   
 end
 
 
-
-
-level = {
- { 64, 0xffff },
- { 64, 0x0000 },
- { 65, 0x2000 },
- { 65, 0x1000 },
- { 65, 0x0800 },
- { 65, 0x0400 },
- { 65, 0x0200 },
- { 65, 0x0100 },
- { 65, 0x0080 },
- { 65, 0x0040 },
- { 65, 0x0020 },
- { 65, 0x0010 },
- { 65, 0x0008 },
- { 65, 0x0004 },
- { 65, 0x0002 },
- { 65, 0x0001 },
- { 65, 0x0000 },
- { 65, 0x8001 },
- { 65, 0x4002 },
- { 65, 0x2004 },
- { 65, 0x1008 },
- { 65, 0x0810 },
- { 65, 0x0420 },
- { 65, 0x0240 },
- { 65, 0x0180 },
- { 65, 0x0180 },
- { 65, 0x0240 },
- { 65, 0x0420 },
- { 65, 0x0810 },
- { 65, 0x1008 },
- { 65, 0x2004 },
- { 65, 0x4002 },
+ptyp = {
+   [64] = {
+	  s = 100,				-- sprite
+	  m = function(x,y)		-- funcion de x y y, retorna 2 valores
+		 return x-1,math.cos(x/10)*0.5 + y ;
+	  end
+   },
 }
-
-
-
-
-
 
 
 -- ROOMS
@@ -225,12 +184,7 @@ rooms = {
 			self.cooldown = d + self.cooldownDutarion;
 		 end
 
-		 -- crear enemigos
-		 if self.enemyTimer < d and #level > 0 then
-			local bar = table.remove(level,1)
-			registro(enemies, bar )
-			self.enemyTimer = d + self.enemyTimerDuration
-		 end
+		 
 
 		 -- mantener al jugador en el viewport siempre
 		 local left_border = 0
@@ -250,10 +204,22 @@ rooms = {
 			player.y = button_border
 		 end
 
-		 
-		 
+
+         -- crear enemigos
+		 if self.enemyTimer < d and #level > 0 then
+			local bar = table.remove(level,1)
+            local t = bar[1]
+            local num = bar[2]
+
+            if     t == 0 then self.enemyTimerDuration = num
+            elseif t == 1 then trace("test")
+            else registro(enemies, t, num ) end
+
+			self.enemyTimer = d + self.enemyTimerDuration
+		 end
+         
 	  end,
-	  
+
 	  Draw = function(self)
 		 cls()
 		 spr(moon_sprite,200,10,5,2,0,0,2,2)
@@ -273,8 +239,8 @@ rooms = {
 		 end)
 
 		 iterate(enemies, function(foo, id)
-					foo.x, foo.y = foo.m(foo.x,foo.y)
-					spr(enemy_sprite, foo.x, foo.y)
+					foo.x, foo.y = ptyp[foo.t].m(foo.x,foo.y)
+					spr(foo.t, foo.x, foo.y)
 		 end)
 		 
 		 spr(player_sprite,player.x,player.y,0);
@@ -309,7 +275,7 @@ rooms = {
 		 spr(cursor_sprite,120-(8*5),68+23+(8 * self.selected))
 
 		 -- texto
-		 print("Press any key",240/2-(8*4),68+24)		  
+		 print("Press any key",240/2-(8*4),68+24)	  
 	  end,
    },
 
