@@ -126,37 +126,25 @@ rooms.inGame = {
       cls()
       spr(moon_sprite,200,10,5,2,0,0,2,2)
       
-      iterate(arrows,function(foo, id)
+      iterate(arrows,function(foo, id) -- flechas
 
-                 if foo.alive then
-                    if foo.x < SCREEN_WIDTH then
+                 if foo.alive then -- verificar si existe
+
+                    -- eliminar si se sale del viewport
+                    if foo.x < SCREEN_WIDTH then 
                        spr(arrow_sprite, foo.x, foo.y,0)
                        foo.x = foo.x + arrows.hspd
                     else
                        kill(arrows, id)
                     end
+                    
                  end
                  
-                 
-                 -- -- verificar que la flecha exista y se
-                 -- -- encuentra en el viewport
-                 -- if foo.alive and foo.x < SCREEN_WIDTH then
-                 --    -- sí se existe y esta en el viewport
-                 --    -- entonces se mueve a la derecha y se dibuja
-                 --    -- su sprite   
-                 --    foo.x = foo.x + arrows.hspd
-                 --    spr(arrow_sprite, foo.x, foo.y,0)
-                 --    -- sí existe pero no esta en el el viewport
-                 -- elseif foo.alive then
-                 --    kill(arrows, id)
-                 -- end
       end)
 
-      iterate(enemies, function(foo, id)
-                 -- verificar que el enemigos exista y se
-                 -- encuentra en el viewport
+      iterate(enemies, function(foo, id) -- enemigos
 
-                 if foo.alive then
+                 if foo.alive then -- verificar si existe
                     if foo.x > 0 then
                        foo.x, foo.y = templates[foo.t].m(foo.x,foo.y)
                        spr(foo.t, foo.x, foo.y, 0)
@@ -170,14 +158,6 @@ rooms.inGame = {
                        kill(arrows,bid)
                     end
                  end
-                 
-                 -- if foo.alive and foo.x > 0 then
-                 --    -- mover al enemigo, en funcion a su protipo
-                 --    -- data/templates.lua para más informacion
-
-                 -- elseif foo.alive then 
-                    
-                 -- end
       end)
       
       spr(player_sprite,player.x,player.y,0);
