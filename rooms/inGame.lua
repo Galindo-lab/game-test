@@ -152,10 +152,10 @@ rooms.inGame = {
                        kill(enemies, id)
                     end
 
-                    local ove, bid = overlap2(enemies,id, arrows)
-                    if ove then
+                    local colided, selected = overlapGroup(enemies, id, arrows)
+                    if colided then
                        kill(enemies, id)
-                       kill(arrows,bid)
+                       kill(arrows, selected)
                     end
                  end
       end)

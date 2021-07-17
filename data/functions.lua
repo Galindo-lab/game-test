@@ -50,20 +50,25 @@ function overlap(a,b)
 
 end
 
-function overlap2(ag,aid,bg)
+function overlapGroup(ag,id,bg)
    local a, b = ag.list, bg.list
-
-   local al, ar, at, ab = a[aid].x, a[aid].x+8, a[aid].y, a[aid].y+8
+   local a_size, b_size = ag.size, bg.size
+   local al, ar, at, ab = a[id].x, a[id].x+a_size, a[id].y, a[id].y+b_size
 
    for i = 1, #b do
-      local bl, br, bt, bb = b[i].x, b[i].x+8, b[i].y, b[i].y+8
+      local bix, biy = b[i].x, b[i].y
 
-      if ar>bl and al<br and ab>bt and at<bb and b[i].alive then
+      if b[i].alive
+         and ar > bix
+         and al < bix+b_size
+         and ab > biy
+         and at < biy+b_size
+      then
          return true, i
       end
 
    end
   
-   return false, nil
+   return false, -1
   
 end
