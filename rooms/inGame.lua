@@ -1,4 +1,12 @@
 rooms.inGame = {
+
+
+
+
+
+
+
+   
    onCreate = function(self)    -- --------------------------------------------
       -- duracion del cooldown
       self.cooldownDutarion = 200;
@@ -8,7 +16,10 @@ rooms.inGame = {
       -- tiempe de generacion entre enemigos
       self.enemyTimerDuration = 200
       self.enemyTimer = time() + 3000
-      
+
+      -- center player
+      player.x = SCREEN_WIDTH/4
+      player.y = SCREEN_HEIGHT/2
 
       OVR = function()
          rect(0,0,SCREEN_WIDTH,SPRITE_SIZE-1,8)
@@ -16,12 +27,29 @@ rooms.inGame = {
       end
 
    end,
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
+
+
+   
    
    onStep = function(self)      -- --------------------------------------------
       player.x = player.x + actions.moveX()
       player.y = player.y + actions.moveY()
 
-      -- llamar al valor cada ejecucion, es mas rapido que recalcular
+      -- llamar al valor cada ejecucion
       -- el valor de la funcion cada ciclo
       local d = time();
 
@@ -67,16 +95,44 @@ rooms.inGame = {
       
    end,
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
+
+
+
+
+
+
+   
+
    Draw = function(self)        -- --------------------------------------------
       cls()
       spr(moon_sprite,200,10,5,2,0,0,2,2)
       
       iterate(arrows,function(foo, id)
-                 -- verificar que la flecha exista y se encuentra en
-                 -- el viewport
+                 -- verificar que la flecha exista y se
+                 -- encuentra en el viewport
                  if foo.alive and foo.x < SCREEN_WIDTH then
-                    -- sí se existe y esta en el viewport entonces se
-                    -- mueve a la derecha y se dibuja su sprite
+                    -- sí se existe y esta en el viewport
+                    -- entonces se mueve a la derecha y se dibuja
+                    -- su sprite   
                     foo.x = foo.x + arrows.hspd
                     spr(arrow_sprite, foo.x, foo.y,0)
                     -- sí existe pero no esta en el el viewport
@@ -86,9 +142,20 @@ rooms.inGame = {
       end)
 
       iterate(enemies, function(foo, id)
-                 trace(foo.t)
-                 foo.x, foo.y = templates[foo.t].m(foo.x,foo.y)
-                 spr(foo.t, foo.x, foo.y)
+                 -- verificar que el enemigos exista y se
+                 -- encuentra en el viewport
+                 if foo.alive and foo.x > 0 then
+                    -- mover al enemigo, en funcion a su protipo
+                    -- data/templates.lua para más informacion
+
+                    foo.x, foo.y = templates[foo.t].m(foo.x,foo.y)
+                    spr(foo.t, foo.x, foo.y, 0)
+
+                    
+                    
+                 elseif foo.alive then 
+                    kill(enemies, id)
+                 end
       end)
       
       spr(player_sprite,player.x,player.y,0);

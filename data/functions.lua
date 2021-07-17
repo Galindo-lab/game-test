@@ -35,3 +35,18 @@ function switchRoom(room)
 	  end
    end
 end
+
+
+function overlap(a,b)
+	local al, ar, at, ab = a.x, a.x+a.w, a.y, a.y+a.h
+	local bl, br, bt, bb = b.x, b.x+b.w, b.y, b.y+b.h
+
+    if ar>bl and al<br and ab>bt and at<bb
+    then
+    	return true
+    else
+    	return false
+    end
+
+end
+
