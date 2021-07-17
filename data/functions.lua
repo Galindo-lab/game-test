@@ -2,7 +2,7 @@
 -- FUNCIONES REESCRITAS 
 
 function f(...)
-  return ...
+   return ...
 end
 
 function nbtn(value)
@@ -38,15 +38,32 @@ end
 
 
 function overlap(a,b)
-	local al, ar, at, ab = a.x, a.x+a.w, a.y, a.y+a.h
-	local bl, br, bt, bb = b.x, b.x+b.w, b.y, b.y+b.h
+   local al, ar, at, ab = a.x, a.x+a.w, a.y, a.y+a.h
+   local bl, br, bt, bb = b.x, b.x+b.w, b.y, b.y+b.h
 
-    if ar>bl and al<br and ab>bt and at<bb
-    then
-    	return true
-    else
-    	return false
-    end
+   if ar>bl and al<br and ab>bt and at<bb
+   then
+      return true
+   else
+      return false
+   end
 
 end
 
+function overlap2(ag,aid,bg)
+   local a, b = ag.list, bg.list
+
+   local al, ar, at, ab = a[aid].x, a[aid].x+8, a[aid].y, a[aid].y+8
+
+   for i = 1, #b do
+      local bl, br, bt, bb = b[i].x, b[i].x+8, b[i].y, b[i].y+8
+
+      if ar>bl and al<br and ab>bt and at<bb and b[i].alive then
+         return true, i
+      end
+
+   end
+  
+   return false, nil
+  
+end

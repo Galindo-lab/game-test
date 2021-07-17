@@ -41,7 +41,7 @@ function kill(factory,id)
 end
 
 function iterate(factory, actions)
-   for i = 0, #factory.list do
+   for i = 1, #factory.list do
 	  local foo = factory.list[i] or nil
 	  
 	  if foo ~= nil then
