@@ -1,11 +1,4 @@
 rooms.inGame = {
-
-
-
-
-
-
-
    
    onCreate = function(self)    -- --------------------------------------------
       -- duracion del cooldown
@@ -17,13 +10,18 @@ rooms.inGame = {
       self.enemyTimerDuration = 200
       self.enemyTimer = time() + 3000
 
+      -- reiniciar el score
+      pmem(player_score,0)
+
       -- center player
       player.x = SCREEN_WIDTH/4
       player.y = SCREEN_HEIGHT/2
 
       OVR = function()
          rect(0,0,SCREEN_WIDTH,SPRITE_SIZE-1,8)
-         print( "SCORE: 000000 ", 8, 1, 15 , true )
+         print( string.format("SCORE:%06d ", pmem(player_score))
+
+                , 8, 1, 15 , true )
       end
 
    end,
@@ -87,7 +85,7 @@ rooms.inGame = {
          local num = bar[2]
 
          if     t == 0 then self.enemyTimerDuration = num
-         elseif t == 1 then trace("test")
+         elseif t == 1 then trace("")
          else registro(enemies, t, num ) end
 
          self.enemyTimer = d + self.enemyTimerDuration
@@ -123,6 +121,9 @@ rooms.inGame = {
    
 
    Draw = function(self)        -- --------------------------------------------
+
+      local d = time();
+      
       cls()
       spr(moon_sprite,200,10,5,2,0,0,2,2)
       
@@ -152,13 +153,28 @@ rooms.inGame = {
                        kill(enemies, id)
                     end
 
-                    local colided, selected = overlapGroup(enemies, id, arrows)
+                    -- colision de enemigos y fechas
+                    local colided, selected = overlapGroups(enemies, id, arrows)
                     if colided then
+
+                       pmem(player_score, pmem(player_score)+10)
+                       
                        kill(enemies, id)
                        kill(arrows, selected)
                     end
+
+                    -- TODO: Implementar las coliciones correctamente
+                    
+                    if overlapSpriteGroup(player, enemies, id) then
+                       trace("colition")
+                    end
+                    
                  end
       end)
+
+      if  math.floor(d) % 2 == 0 then
+         spr(player_halo, player.x, player.y-8, 0)
+      end
       
       spr(player_sprite,player.x,player.y,0);
       

@@ -2,6 +2,12 @@ rooms.menu = {
    onCreate = function(self)
       self.selected = 0
       poke(0x03FF8, 1)
+
+      OVR = function()
+         rect(0,0,SCREEN_WIDTH,SPRITE_SIZE-1,8)
+         print( string.format("SCORE:%06d ", pmem(player_score))
+                , 8, 1, 15 , true )
+      end
    end,
    
    onStep = function(self)
