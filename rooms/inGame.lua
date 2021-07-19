@@ -19,7 +19,7 @@ rooms.inGame = {
 
       OVR = function()
          rect(0,0,SCREEN_WIDTH,SPRITE_SIZE-1,8)
-         print( string.format("SCORE:%06d ", pmem(player_score))
+         print( string.format("SCORE:%06d d:%4.f", pmem(player_score), time())
 
                 , 8, 1, 15 , true )
       end
@@ -128,51 +128,41 @@ rooms.inGame = {
       spr(moon_sprite,200,10,5,2,0,0,2,2)
       
       iterate(arrows,function(foo, id) -- flechas
-
-                 if foo.alive then -- verificar si existe
-
-                    -- eliminar si se sale del viewport
-                    if foo.x < SCREEN_WIDTH then 
-                       spr(arrow_sprite, foo.x, foo.y,0)
-                       foo.x = foo.x + arrows.hspd
-                    else
-                       kill(arrows, id)
-                    end
-                    
+                 -- eliminar si se sale del viewport
+                 if foo.x < SCREEN_WIDTH then 
+                    spr(arrow_sprite, foo.x, foo.y,0)
+                    foo.x = foo.x + arrows.hspd
+                 else
+                    kill(arrows, id)
                  end
+      end)
+
+      iterate(enemies, function(foo, id) -- enemigos                 
+                 if foo.x > 0 then
+                    foo.x, foo.y = templates[foo.t].m(foo.x,foo.y)
+                    spr(foo.t, foo.x, foo.y, 0)
+                 else
+                    kill(enemies, id)
+                 end
+
+                 -- colision de enemigos y fechas
+                 local colided, selected = overlapGroups(enemies, id, arrows)
                  
-      end)
+                 if colided then
+                    pmem(player_score, pmem(player_score)+10)
+                    kill(enemies, id)
+                    kill(arrows, selected)
+                 end
 
-      iterate(enemies, function(foo, id) -- enemigos
-
-                 if foo.alive then -- verificar si existe
-                    if foo.x > 0 then
-                       foo.x, foo.y = templates[foo.t].m(foo.x,foo.y)
-                       spr(foo.t, foo.x, foo.y, 0)
-                    else
-                       kill(enemies, id)
-                    end
-
-                    -- colision de enemigos y fechas
-                    local colided, selected = overlapGroups(enemies, id, arrows)
-                    if colided then
-
-                       pmem(player_score, pmem(player_score)+10)
-                       
-                       kill(enemies, id)
-                       kill(arrows, selected)
-                    end
-
-                    -- TODO: Implementar las coliciones correctamente
-                    
-                    if overlapSpriteGroup(player, enemies, id) then
-                       trace("colition")
-                    end
-                    
+                 -- colision con el jugador
+                 -- TODO: todavia falta implementar la colicion, este solo es
+                 --       codigo placeholder.
+                 if overlapSpriteGroup( player, foo, enemies.size) then
+                    reset()
                  end
       end)
 
-      if  math.floor(d) % 2 == 0 then
+      if floor(d) % 2 == 0 then
          spr(player_halo, player.x, player.y-8, 0)
       end
       

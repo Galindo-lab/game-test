@@ -44,9 +44,10 @@ function iterate(factory, actions)
    for i = 1, #factory.list do
 	  local foo = factory.list[i] or nil
 	  
-	  if foo ~= nil then
+	  if foo.alive then
 		 actions(foo, i)
 	  end
+      
    end
 end
 

@@ -5,6 +5,8 @@ function f(...)
    return ...
 end
 
+floor = math.floor
+
 function nbtn(value)
    if btn(value) then return 1 else return 0 end
 end
@@ -39,34 +41,26 @@ end
 
 -- TODO: simplificar todo esto, sepuede crear una funcion para simplificar este proceso
 
-function overlapSprites(a,b)           -- elementos individuales
-   local al, ar, at, ab = a.x, a.x+a.w, a.y, a.y+a.h
-   local bl, br, bt, bb = b.x, b.x+b.w, b.y, b.y+b.h
-
-   if ar>bl and al<br and ab>bt and at<bb
-   then
-      return true
-   else
-      return false
-   end
-
+function overlap( ax,ay,aw,ah,  bx,by,bw,bh )
+   return (ax+aw > bx)
+      and (ax < bx+bw)
+      and (ay+ah > by)
+      and (ay < by+bh)
 end
 
-function overlapSpriteGroup(a, bg, id)
-   local al, ar, at, ab = a.x, a.x+a.w, a.y, a.y+a.h
-   local b = bg.list[id]
-   local bl, br, bt, bb = b.x, b.x+bg.size, b.y, b.y+bg.size
-
-   if ar>bl and al<br and ab>bt and at<bb
-   then
-      return true
-   else
-      return false
-   end
-   
+function overlapSpriteGroup(a, b, bgs)
+   return overlap( a.x, a.y, a.w, a.h,
+                   b.x, b.y, bgs, bgs )
 end
 
-function overlapGroups(ag,id,bg) -- grupo & grupo
+function overlapSprites(a, b)   -- elementos individuales
+   return overlap( a.x, a.y, a.w, a.h,
+                   b.x, b.y, b.w, b.h )
+end
+
+-- function overlapGroups(ag, id)
+
+function overlapGroups(ag, id, bg) -- grupo & grupo
    local a, b = ag.list, bg.list
    local a_size, b_size = ag.size, bg.size
    local al, ar, at, ab = a[id].x, a[id].x+a_size, a[id].y, a[id].y+b_size
